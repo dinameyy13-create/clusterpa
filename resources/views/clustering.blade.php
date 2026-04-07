@@ -154,7 +154,7 @@ function renderTable(data) {
             <td style="text-align:center;"><span class="nutrisi-pill" style="background:#ECFDF5;color:#059669;">${f.serat}</span></td>
             <td style="text-align:center;"><span class="nutrisi-pill">${f.zat_besi}</span></td>
             <td style="text-align:center;"><span class="nutrisi-pill">${f.kalsium}</span></td>
-            <td style="text-align:center;"><span class="nutrisi-pill" style="background:#FFF7ED;color:#EA580C;">${f.vitamin_c}</span></td>
+            <td style="text-align:center;"><span class="nutrisi-pill" style="background:#FFF7ED;color:#EA580C;">${f.vit_c}</span></td>
         </tr>`;
     }).join('');
 }
