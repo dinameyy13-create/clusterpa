@@ -135,52 +135,45 @@ function switchTab(name, btn) {
 fetch('{{ route("grafik.data") }}')
     .then(r => r.json())
     .then(data => {
+        console.log(data);
         initScatter(data.scatter);
         initBar(data.bar);
         initRadar(data.bar);
     });
+    
+    function initScatter(scatterData) {
+        console.log("Scatter jalan", scatterData);
 
-function initScatter(scatterData) {
-    // Build legend
-    const legend = document.getElementById('scatterLegend');
-    legend.innerHTML = clusterColors.map((c,i) => `
-        <div class="legend-item">
-            <span class="legend-dot" style="background:${c};"></span>
-            ${clusterLabels[i]}
-        </div>`).join('');
+        const datasets = clusterColors.map((color, c) => ({
+            label: clusterLabels[c],
+            data: scatterData
+                .filter(d => d.cluster === c)
+                .map(d => ({
+                    x: d.x,
+                    y: d.y,
+                    nama: d.nama
+                })),
+            backgroundColor: color,
+            pointRadius: 5
+        }));
 
-    // Group by cluster
-    const datasets = clusterColors.map((color, c) => ({
-        label: clusterLabels[c],
-        data: scatterData.filter(d => d.cluster === c).map(d => ({ x: d.x, y: d.y, nama: d.nama })),
-        backgroundColor: color + 'BB',
-        borderColor: color,
-        borderWidth: 1.5,
-        pointRadius: 7,
-        pointHoverRadius: 9,
-    }));
-
-    scatterChart = new Chart(document.getElementById('scatterChart').getContext('2d'), {
-        type: 'scatter',
-        data: { datasets },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'top', labels: { font: { family: 'Plus Jakarta Sans', size: 12 }, boxWidth: 10, padding: 16 }},
-                tooltip: {
-                    callbacks: {
-                        label: ctx => ` ${ctx.raw.nama} — Protein: ${ctx.raw.x}g, Kalori: ${ctx.raw.y} kcal`
+        new Chart(document.getElementById('scatterChart'), {
+            type: 'scatter',
+            data: { datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Protein' }
                     },
-                    bodyFont: { family: 'Plus Jakarta Sans' }
+                    y: {
+                        title: { display: true, text: 'Kalori' }
+                    }
                 }
-            },
-            scales: {
-                x: { title: { display: true, text: 'Protein (g/100g)', font: { family: 'Plus Jakarta Sans', size: 12 }}, grid: { color: '#EFF6FF' }, ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }}},
-                y: { title: { display: true, text: 'Kalori (kcal/100g)', font: { family: 'Plus Jakarta Sans', size: 12 }}, grid: { color: '#EFF6FF' }, ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }}}
             }
-        }
-    });
-}
+        });
+    }
 
 function initBar(barData) {
     // Cluster info bar

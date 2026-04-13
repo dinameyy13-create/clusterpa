@@ -10,12 +10,13 @@ class FoodDataService
 
         if ($response->successful()) {
            return array_map(function ($item) {
+            $cluster = (int) ($item['cluster'] ?? 0);
             // mapping kategori berdasarkan cluster
             $kategoriMap = [
-                0 => 'Tinggi Protein',
+                0 => 'Seimbang',
                 1 => 'Tinggi Karbohidrat',
-                2 => 'Seimbang & Bergizi',
-                3 => 'Tinggi Serat & Vitamin',
+                2 => 'Rendah Nutrisi',
+                3 => 'Tinggi Energi & Protein',
             ];
 
             return [
@@ -28,8 +29,18 @@ class FoodDataService
                 'kalsium' => $item['Calcium (mg)'] ?? 0,
                 'vit_c' => $item['Vitamin C (mg)'] ?? $item['Vitamin C(mg)'] ?? 0,
                 'zat_besi' => $item['Iron (mg)'] ?? $item['Iron(mg)'] ?? 0,
-                'cluster' => $item['cluster'] ?? 0,
-                'kategori' => $kategoriMap[$item['cluster']] ?? 'Tidak diketahui',
+
+                    // cluster asli (untuk logika)
+                    'cluster' => $cluster,
+
+                    // untuk tampilan (biar 1–4, bukan 0–3)
+                    'cluster_display' => $cluster + 1,
+
+                    // kategori hasil interpretasi
+                    'kategori' => $kategoriMap[$cluster] ?? 'Cluster ' . ($cluster + 1),
+
+                    // label siap tampil
+                    'cluster_label' => 'Cluster ' . ($cluster + 1) . ' - ' . ($kategoriMap[$cluster] ?? ''),
             ];
         }, $response->json());
         }

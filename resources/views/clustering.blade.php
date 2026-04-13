@@ -29,6 +29,50 @@
     text-align: center; padding: 48px; color: var(--text-muted);
     font-size: 14px;
 }
+
+.dropdown-filter {
+    position: relative;
+}
+
+#dropdownBtn {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 110%;
+    left: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    min-width: 220px;
+    z-index: 100;
+}
+
+.dropdown-menu label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+#pagination button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+}
+
+#pagination button:hover {
+    background: #f1f5f9;
+}
 </style>
 @endpush
 
@@ -50,22 +94,16 @@
         <!-- Filter Bar -->
         <div class="filter-bar">
             <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Cari nama makanan..." style="flex:1;min-width:200px;max-width:300px;">
-            <select class="filter-select" id="clusterFilter">
-                <option value="all">Semua Cluster</option>
-                <option value="0">🔵 Cluster 1 – Tinggi Protein</option>
-                <option value="1">🟡 Cluster 2 – Tinggi Karbohidrat</option>
-                <option value="2">🟢 Cluster 3 – Seimbang & Bergizi</option>
-                <option value="3">🟣 Cluster 4 – Tinggi Serat & Vitamin</option>
-            </select>
-            <select class="filter-select" id="kategoriFilter">
-                <option value="all">Semua Kategori</option>
-                <option value="Hewani">Hewani</option>
-                <option value="Nabati">Nabati</option>
-                <option value="Karbohidrat">Karbohidrat</option>
-                <option value="Sayuran">Sayuran</option>
-                <option value="Buah">Buah</option>
-                <option value="Olahan">Olahan</option>
-            </select>
+            <div class="dropdown-filter">
+            <button id="dropdownBtn">Pilih Cluster ▾</button>
+
+            <div id="dropdownMenu" class="dropdown-menu">
+                <label><input type="checkbox" value="0"> Cluster 1 - Seimbang</label>
+                <label><input type="checkbox" value="1"> Cluster 2 - Tinggi Karbohidrat</label>
+                <label><input type="checkbox" value="2"> Cluster 3 - Rendah Nutrisi</label>
+                <label><input type="checkbox" value="3"> Cluster 4 - Tinggi Energi & Protein</label>
+            </div>
+        </div>
             <button onclick="resetFilter()" style="padding:9px 16px;border-radius:8px;border:1.5px solid #DBEAFE;background:white;cursor:pointer;font-size:13px;color:#64748B;font-family:inherit;">Reset</button>
         </div>
 
@@ -93,6 +131,7 @@
                 </tbody>
             </table>
         </div>
+        <div id="pagination" style="margin-top:16px;display:flex;gap:6px;flex-wrap:wrap;"></div>
     </div>
 </div>
 
@@ -100,10 +139,10 @@
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:20px;">
     @php
         $legends = [
-            ['color'=>'#2563EB','label'=>'Cluster 1 – Tinggi Protein','desc'=>'Daging, ikan, telur, kacang-kacangan'],
+            ['color'=>'#2563EB','label'=>'Cluster 1 – Seimbang','desc'=>'Daging, ikan, telur, kacang-kacangan'],
             ['color'=>'#F59E0B','label'=>'Cluster 2 – Tinggi Karbohidrat','desc'=>'Nasi, roti, kentang, oatmeal'],
-            ['color'=>'#10B981','label'=>'Cluster 3 – Seimbang & Bergizi','desc'=>'Menu olahan dengan profil nutrisi seimbang'],
-            ['color'=>'#8B5CF6','label'=>'Cluster 4 – Tinggi Serat & Vitamin','desc'=>'Sayuran dan buah-buahan segar'],
+            ['color'=>'#10B981','label'=>'Cluster 3 – Rendah Nutrisi','desc'=>'Menu olahan dengan profil nutrisi seimbang'],
+            ['color'=>'#8B5CF6','label'=>'Cluster 4 – Tinggi Energi & Serat','desc'=>'Sayuran dan buah-buahan segar'],
         ];
     @endphp
     @foreach($legends as $leg)
@@ -120,31 +159,100 @@
 
 @push('scripts')
 <script>
+let currentPage = 1;
+const rowsPerPage = 10; // bisa ubah (10, 20, dll)
 const allFoods = @json($foods);
+let filteredData = [...allFoods]; 
+
 const clusterColors = ['#2563EB','#F59E0B','#10B981','#8B5CF6'];
 const clusterLabels = ['Tinggi Protein','Tinggi Karbohidrat','Seimbang & Bergizi','Tinggi Serat & Vitamin'];
+const selectedClusters = Array.from(
+    document.querySelectorAll('#clusterFilter input:checked')
+).map(cb => cb.value);
+const dropdownBtn = document.getElementById('dropdownBtn');
+const dropdownMenu = document.getElementById('dropdownMenu');
+
+function renderPagination(totalData) {
+    const totalPages = Math.ceil(totalData / rowsPerPage);
+    const container = document.getElementById('pagination');
+
+    container.innerHTML = '';
+
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    // Prev
+    container.innerHTML += `
+        <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            Prev
+        </button>
+    `;
+
+    // First page
+    if (startPage > 1) {
+        container.innerHTML += `<button onclick="changePage(1)">1</button>`;
+        if (startPage > 2) container.innerHTML += `<span>...</span>`;
+    }
+
+    // Page numbers (limited)
+    for (let i = startPage; i <= endPage; i++) {
+        container.innerHTML += `
+            <button onclick="changePage(${i})"
+                style="${i === currentPage ? 'background:#2563EB;color:white;' : ''}">
+                ${i}
+            </button>
+        `;
+    }
+
+    // Last page
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) container.innerHTML += `<span>...</span>`;
+        container.innerHTML += `<button onclick="changePage(${totalPages})">${totalPages}</button>`;
+    }
+
+    // Next
+    container.innerHTML += `
+        <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+            Next
+        </button>
+    `;
+}
+
+function changePage(page) {
+    currentPage = page;
+    renderTable(filteredData);
+}
 
 function renderTable(data) {
     const tbody = document.getElementById('tableBody');
     document.getElementById('resultCount').textContent = `Menampilkan ${data.length} data`;
 
-    if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="12"><div class="empty-state">😕 Tidak ada data yang sesuai filter</div></td></tr>';
+    // pagination logic
+    const start = (currentPage - 1) * rowsPerPage;
+    const paginatedData = data.slice(start, start + rowsPerPage);
+
+    if (paginatedData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12"><div class="empty-state"> Tidak ada data</div></td></tr>';
         return;
     }
 
-    tbody.innerHTML = data.map((f, i) => {
-        const c = f.cluster;
-        const color = clusterColors[c] || '#999';
-        const label = clusterLabels[c] || `Cluster ${c+1}`;
+    tbody.innerHTML = paginatedData.map((f, i) => {
+        const c = f.cluster_display;
+        const color = clusterColors[f.cluster] || '#999';
+
         return `
         <tr>
-            <td style="color:var(--text-muted);font-size:12px;">${i+1}</td>
+            <td style="color:var(--text-muted);font-size:12px;">${start + i + 1}</td>
             <td style="font-weight:600;">${f.nama}</td>
-            <td><span style="font-size:12px;background:var(--surface-3);padding:2px 8px;border-radius:4px;color:var(--text-secondary);">${f.kategori}</span></td>
             <td>
                 <span class="cluster-badge" style="background:${color}18;color:${color};">
-                    <span class="cluster-dot" style="background:${color};"></span>${label}
+                    <span class="cluster-dot" style="background:${color};"></span>
+                    ${f.kategori}
+                </span>
+            </td>
+            <td>
+                <span class="cluster-badge" style="background:${color}18;color:${color};">
+                    <span style="background:${color};"></span>${c}
                 </span>
             </td>
             <td style="text-align:center;"><span class="nutrisi-pill">${f.kalori}</span></td>
@@ -157,35 +265,63 @@ function renderTable(data) {
             <td style="text-align:center;"><span class="nutrisi-pill" style="background:#FFF7ED;color:#EA580C;">${f.vit_c}</span></td>
         </tr>`;
     }).join('');
+
+    renderPagination(data.length);
 }
 
 function applyFilter() {
     const search = document.getElementById('searchInput').value.toLowerCase();
-    const cluster = document.getElementById('clusterFilter').value;
-    const kategori = document.getElementById('kategoriFilter').value;
 
-    let filtered = allFoods.filter(f => {
+    const selectedClusters = Array.from(
+        document.querySelectorAll('#dropdownMenu input:checked')
+    ).map(cb => cb.value);
+
+    filteredData = allFoods.filter(f => {
         const matchSearch = f.nama.toLowerCase().includes(search);
-        const matchCluster = cluster === 'all' || f.cluster == cluster;
-        const matchKategori = kategori === 'all' || f.kategori === kategori;
-        return matchSearch && matchCluster && matchKategori;
+
+        const matchCluster =
+            selectedClusters.length === 0 ||
+            selectedClusters.includes(String(f.cluster));
+
+        return matchSearch && matchCluster;
     });
 
-    renderTable(filtered);
+    currentPage = 1;
+    renderTable(filteredData);
 }
 
 function resetFilter() {
     document.getElementById('searchInput').value = '';
-    document.getElementById('clusterFilter').value = 'all';
-    document.getElementById('kategoriFilter').value = 'all';
-    renderTable(allFoods);
+
+    document.querySelectorAll('#dropdownMenu input')
+        .forEach(cb => cb.checked = false);
+
+    filteredData = [...allFoods]; // reset data
+    currentPage = 1;
+    renderTable(filteredData);
 }
 
+// EVENT LISTENER SEARCH
 document.getElementById('searchInput').addEventListener('input', applyFilter);
-document.getElementById('clusterFilter').addEventListener('change', applyFilter);
-document.getElementById('kategoriFilter').addEventListener('change', applyFilter);
 
-// Initial render
-renderTable(allFoods);
+// EVENT LISTENER CHECKBOX DROPDOWN
+document.querySelectorAll('#dropdownMenu input')
+    .forEach(cb => cb.addEventListener('change', applyFilter));
+
+// DROPDOWN TOGGLE
+dropdownBtn.addEventListener('click', () => {
+    dropdownMenu.style.display =
+        dropdownMenu.style.display === 'block' ? 'none' : 'block';
+});
+
+// KLIK LUAR → CLOSE DROPDOWN
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.dropdown-filter')) {
+        dropdownMenu.style.display = 'none';
+    }
+});
+
+// INITIAL RENDER
+renderTable(filteredData);
 </script>
 @endpush

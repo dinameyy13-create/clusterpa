@@ -11,5 +11,6 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 Route::get('/clustering', [ClusteringController::class, 'index'])->name('clustering');
 Route::get('/clustering/data', [ClusteringController::class, 'getData'])->name('clustering.data');
 Route::get('/grafik', [GrafikController::class, 'index'])->name('grafik');
-Route::get('/grafik/data', [GrafikController::class, 'getData'])->name('grafik.data');
+Route::get('/grafik/data', [ClusteringController::class, 'getGrafikData'])->name('grafik.data');
 Route::get('/insight', [InsightController::class, 'index'])->name('insight');
+Route::get('/rekomendasi', function () {return view('rekomendasi');})->name('rekomendasi');

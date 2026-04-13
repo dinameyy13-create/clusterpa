@@ -58,4 +58,62 @@ class ClusteringController extends Controller
 
         return response()->json(array_values($foods));
     }
+
+    public function getGrafikData()
+    {
+        $foods = $this->foodService->getClusteredFoods();
+
+        // SCATTER DATA
+        $scatter = array_map(function ($f) {
+            return [
+                'x' => $f['protein'],
+                'y' => $f['kalori'],
+                'cluster' => $f['cluster'],
+                'nama' => $f['nama']
+            ];
+        }, $foods);
+
+        // BAR DATA (rata-rata per cluster)
+        $clusters = [];
+
+        foreach ($foods as $f) {
+            $c = $f['cluster'];
+
+            if (!isset($clusters[$c])) {
+                $clusters[$c] = [
+                    'cluster' => 'Cluster ' . ($c + 1),
+                    'protein' => 0,
+                    'karbohidrat' => 0,
+                    'lemak' => 0,
+                    'serat' => 0,
+                    'zat_besi' => 0,
+                    'kalsium' => 0,
+                    'kalori' => 0,
+                    'count' => 0,
+                ];
+            }
+
+            $clusters[$c]['protein'] += $f['protein'];
+            $clusters[$c]['karbohidrat'] += $f['karbohidrat'];
+            $clusters[$c]['lemak'] += $f['lemak'];
+            $clusters[$c]['serat'] += $f['serat'] ?? 0;
+            $clusters[$c]['zat_besi'] += $f['zat_besi'] ?? 0;
+            $clusters[$c]['kalsium'] += $f['kalsium'] ?? 0;
+            $clusters[$c]['kalori'] += $f['kalori'];
+            $clusters[$c]['count']++;
+        }
+
+        // HITUNG RATA-RATA
+        $bar = array_map(function ($c) {
+            foreach (['protein','karbohidrat','lemak','serat','zat_besi','kalsium','kalori'] as $k) {
+                $c[$k] = $c['count'] ? round($c[$k] / $c['count'], 2) : 0;
+            }
+            return $c;
+        }, $clusters);
+
+        return response()->json([
+            'scatter' => array_values($scatter),
+            'bar' => array_values($bar)
+        ]);
+    }
 }
