@@ -96,14 +96,18 @@
             <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Cari nama makanan..." style="flex:1;min-width:200px;max-width:300px;">
             <div class="dropdown-filter">
             <button id="dropdownBtn">Pilih Cluster ▾</button>
-
             <div id="dropdownMenu" class="dropdown-menu">
                 <label><input type="checkbox" value="0"> Cluster 1 - Seimbang</label>
                 <label><input type="checkbox" value="1"> Cluster 2 - Tinggi Karbohidrat</label>
                 <label><input type="checkbox" value="2"> Cluster 3 - Rendah Nutrisi</label>
                 <label><input type="checkbox" value="3"> Cluster 4 - Tinggi Energi & Protein</label>
             </div>
-        </div>
+            </div>
+             <select id="filterKategori">
+                <option value="all">Semua</option>
+                <option value="makanan">Makanan</option>
+                <option value="bahan">Bahan</option>
+            </select>
             <button onclick="resetFilter()" style="padding:9px 16px;border-radius:8px;border:1.5px solid #DBEAFE;background:white;cursor:pointer;font-size:13px;color:#64748B;font-family:inherit;">Reset</button>
         </div>
 
@@ -166,9 +170,6 @@ let filteredData = [...allFoods];
 
 const clusterColors = ['#2563EB','#F59E0B','#10B981','#8B5CF6'];
 const clusterLabels = ['Tinggi Protein','Tinggi Karbohidrat','Seimbang & Bergizi','Tinggi Serat & Vitamin'];
-const selectedClusters = Array.from(
-    document.querySelectorAll('#clusterFilter input:checked')
-).map(cb => cb.value);
 const dropdownBtn = document.getElementById('dropdownBtn');
 const dropdownMenu = document.getElementById('dropdownMenu');
 
@@ -276,6 +277,8 @@ function applyFilter() {
         document.querySelectorAll('#dropdownMenu input:checked')
     ).map(cb => cb.value);
 
+    const kategori = document.getElementById('filterKategori').value;
+
     filteredData = allFoods.filter(f => {
         const matchSearch = f.nama.toLowerCase().includes(search);
 
@@ -283,7 +286,10 @@ function applyFilter() {
             selectedClusters.length === 0 ||
             selectedClusters.includes(String(f.cluster));
 
-        return matchSearch && matchCluster;
+        const matchKategori =
+            kategori === 'all' || f.kategori_data === kategori;
+
+        return matchSearch && matchCluster && matchKategori;
     });
 
     currentPage = 1;
@@ -307,6 +313,10 @@ document.getElementById('searchInput').addEventListener('input', applyFilter);
 // EVENT LISTENER CHECKBOX DROPDOWN
 document.querySelectorAll('#dropdownMenu input')
     .forEach(cb => cb.addEventListener('change', applyFilter));
+
+// EVENT FILTER KATEGORI
+document.getElementById('filterKategori')
+    .addEventListener('change', applyFilter);
 
 // DROPDOWN TOGGLE
 dropdownBtn.addEventListener('click', () => {

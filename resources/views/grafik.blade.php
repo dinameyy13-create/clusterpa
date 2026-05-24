@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Grafik Interaktif')
-@section('page-title', 'Grafik Interaktif')
-@section('breadcrumb', 'Grafik Interaktif')
+@section('title', 'Grafik Clustering')
+@section('page-title', 'Grafik Clustering')
+@section('breadcrumb', 'Grafik Clustering')
 
 @push('styles')
 <style>
@@ -63,7 +63,7 @@
 
 @section('content')
 <div class="section-header">
-    <h2 class="section-title">Grafik Interaktif</h2>
+    <h2 class="section-title">Grafik Clustering</h2>
     <p class="section-desc">Visualisasi distribusi nutrisi makanan berdasarkan hasil clustering K-Means</p>
 </div>
 

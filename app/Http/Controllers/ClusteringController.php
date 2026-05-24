@@ -29,7 +29,7 @@ class ClusteringController extends Controller
         // Distribusi cluster untuk chart
         $clusterDistribution = [];
         $clusterColors = ['#2563EB','#F59E0B','#10B981','#8B5CF6'];
-        $clusterLabels = ['Tinggi Protein','Tinggi Karbohidrat','Seimbang & Bergizi','Tinggi Serat & Vitamin'];
+        $clusterLabels = ['Seimbang','Tinggi Karbohidrat','Rendah Nutrisi','Tinggi Energi & Protein'];
 
         for ($i=0; $i<$total_cluster; $i++) {
             $count = count(array_filter($foods, fn($f) => $f['cluster'] == $i));
@@ -39,6 +39,27 @@ class ClusteringController extends Controller
                 'color' => $clusterColors[$i],
             ];
         }
+
+        $foods = array_map(function ($f) {
+
+        $nama = strtolower($f['nama']);
+
+        // RULE sederhana
+        $bahan_keywords = ['tepung','minyak','gula','garam','kemiri','mentega'];
+
+        $isBahan = false;
+        foreach ($bahan_keywords as $k) {
+            if (str_contains($nama, $k)) {
+                $isBahan = true;
+                break;
+            }
+        }
+
+        $f['kategori_data'] = $isBahan ? 'bahan' : 'makanan';
+
+        return $f;
+
+    }, $foods);
 
         return view('clustering', compact('foods', 'stats', 'clusterDistribution'));
     }

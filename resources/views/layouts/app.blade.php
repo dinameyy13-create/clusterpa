@@ -661,7 +661,7 @@ body {
                 </a>
                 <a href="{{ route('grafik') }}" class="nav-item {{ request()->routeIs('grafik') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    <span>Grafik Interaktif</span>
+                    <span>Grafik Clustering</span>
                 </a>
                 <a href="{{ route('rekomendasi') }}" class="nav-item {{ request()->routeIs('rekomendasi') ? 'active' : '' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">

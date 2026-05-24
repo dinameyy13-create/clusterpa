@@ -75,13 +75,13 @@
         <div class="card-header">
             <div>
                 <div class="card-title">Distribusi Cluster</div>
-                <div class="card-subtitle">Jumlah makanan per kelompok nutrisi</div>
+                <div class="card-subtitle">Jumlah data makanan hasil clustering K-Means berdasarkan kemiripan nutrisi</div>
             </div>
         </div>
         <div class="card-body">
             <div class="dist-bar-wrap">
                 @php
-                    $clusterIcons = ['🥩','🍚','🥗','🥦'];
+                    $clusterIcons = ['🔵','🟡','🟢','🟣'];
                     $total = $stats['total_makanan'];
                 @endphp
                 @foreach($clusterDistribution as $i => $cluster)
@@ -176,29 +176,47 @@
 const clusterData = @json($clusterDistribution);
 const foods = @json($foods);
 
+const clusterColors = ['#2563EB','#F59E0B','#10B981','#8B5CF6'];
+
+const clusterLabels = [
+    'Seimbang',
+    'Tinggi Karbohidrat',
+    'Rendah Nutrisi',
+    'Tinggi Energi & Protein'
+];
+
+// HITUNG DISTRIBUSI DARI FOODS
+const clusterCount = {};
+
+foods.forEach(f => {
+    clusterCount[f.cluster] = (clusterCount[f.cluster] || 0) + 1;
+});
+
+const sortedClusters = Object.keys(clusterCount)
+    .map(c => parseInt(c))
+    .sort((a,b) => a - b);
+
 // Donut Chart
 const donutCtx = document.getElementById('donutChart').getContext('2d');
 new Chart(donutCtx, {
     type: 'doughnut',
     data: {
-        labels: clusterData.map(c => c.label),
+        labels: sortedClusters.map(c => 
+            `Cluster ${c + 1} - ${clusterLabels[c]}`
+        ),
         datasets: [{
-            data: clusterData.map(c => c.count),
-            backgroundColor: clusterData.map(c => c.color),
+            data: sortedClusters.map(c => clusterCount[c]),
+            backgroundColor: sortedClusters.map(c => clusterColors[c]),
             borderWidth: 3,
             borderColor: '#fff',
-            hoverOffset: 6,
         }]
     },
     options: {
-        responsive: false,
-        cutout: '65%',
+        responsive: true,
+        cutout: '70%',
         plugins: {
-            legend: { display: false },
-            tooltip: {
-                callbacks: {
-                    label: (ctx) => ` ${ctx.label}: ${ctx.raw} makanan`
-                }
+            legend: {
+                display: false // 🔥 ini yang penting
             }
         }
     }
@@ -206,8 +224,6 @@ new Chart(donutCtx, {
 
 // Bar Avg Chart
 const avgData = {};
-const clusterColors = ['#2563EB','#F59E0B','#10B981','#8B5CF6'];
-const clusterLabels = ['Tinggi Protein','Tinggi Karbohidrat','Seimbang & Bergizi','Tinggi Serat & Vitamin'];
 
 for (let c = 0; c < 4; c++) {
     const cf = foods.filter(f => f.cluster === c);
@@ -226,7 +242,7 @@ new Chart(barCtx, {
     data: {
         labels: ['Protein (g)', 'Karbohidrat (g)', 'Lemak (g)', 'Serat (g)'],
         datasets: Object.keys(avgData).map(c => ({
-            label: clusterLabels[c],
+            label: `Cluster ${parseInt(c)+1} - ${clusterLabels[c]}`,
             data: [avgData[c].protein, avgData[c].karbohidrat, avgData[c].lemak, avgData[c].serat],
             backgroundColor: clusterColors[c] + 'CC',
             borderColor: clusterColors[c],
