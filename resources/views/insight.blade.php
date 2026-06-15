@@ -158,21 +158,33 @@ $clusterManfaat = [
 
         <!-- INSIGHT -->
         <div class="nutrisi-box">
-            <div class="nutrisi-title">📊 Insight Nutrisi</div>
+            <div class="nutrisi-title">📊 Profil Nutrisi Rata-rata</div>
+
             <div class="nutrisi-list">
                 <span>🔥 {{ $cluster['avg_kalori'] }} kcal</span>
-                <span>💪 {{ $cluster['avg_protein'] }}g protein</span>
-                <span>⚖️ {{ $cluster['karakteristik'] ?? 'Analisis nutrisi' }}</span>
+                <span>💪 {{ $cluster['avg_protein'] }} g Protein</span>
+                <span>🍚 {{ $cluster['avg_karbohidrat'] }} g Karbohidrat</span>
+                <span>🥑 {{ $cluster['avg_lemak'] }} g Lemak</span>
+                <span>🥦 {{ $cluster['avg_serat'] }} g Serat</span>
             </div>
         </div>
 
         <!-- PERAN -->
         <div class="nutrisi-box">
-            <div class="nutrisi-title">🛡️ Peran terhadap Stunting</div>
+            <div class="nutrisi-title">🔍 Karakteristik Cluster</div>
+
             <div class="nutrisi-list">
-                <span>{{ $cluster['peran_utama'] ?? '-' }}</span>
-                <span>{{ $cluster['fungsi_tubuh'] ?? '-' }}</span>
+                @foreach($cluster['karakteristik'] as $item)
+                    <span>{{ $item }}</span>
+                @endforeach
             </div>
+        </div>
+        <div class="nutrisi-box">
+            <div class="nutrisi-title">🛡️ Peran dalam Pencegahan Stunting</div>
+
+            <p style="font-size:13px;line-height:1.7;margin:0;color:#555;">
+                {{ $cluster['peran_utama'] }}
+            </p>
         </div>
 
         <!-- MANFAAT -->

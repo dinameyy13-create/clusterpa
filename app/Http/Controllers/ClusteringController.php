@@ -40,27 +40,6 @@ class ClusteringController extends Controller
             ];
         }
 
-        $foods = array_map(function ($f) {
-
-        $nama = strtolower($f['nama']);
-
-        // RULE sederhana
-        $bahan_keywords = ['tepung','minyak','gula','garam','kemiri','mentega'];
-
-        $isBahan = false;
-        foreach ($bahan_keywords as $k) {
-            if (str_contains($nama, $k)) {
-                $isBahan = true;
-                break;
-            }
-        }
-
-        $f['kategori_data'] = $isBahan ? 'bahan' : 'makanan';
-
-        return $f;
-
-    }, $foods);
-
         return view('clustering', compact('foods', 'stats', 'clusterDistribution'));
     }
 

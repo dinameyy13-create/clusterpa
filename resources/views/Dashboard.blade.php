@@ -6,12 +6,101 @@
 
 @push('styles')
 <style>
-.dist-bar-wrap { display: flex; flex-direction: column; gap: 12px; }
-.dist-bar-row { display: flex; align-items: center; gap: 12px; }
-.dist-bar-label { width: 160px; font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
-.dist-bar-track { flex: 1; height: 10px; background: var(--surface-3); border-radius: 5px; overflow: hidden; }
-.dist-bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease; }
-.dist-bar-count { width: 30px; text-align: right; font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.mini-stat{
+    background:#F9FAFB;
+    border-radius:12px;
+    padding:12px;
+    text-align:center;
+}
+
+.mini-stat-value{
+    font-size:18px;
+    font-weight:700;
+    color:#111827;
+}
+
+.mini-stat-label{
+    font-size:11px;
+    color:#6B7280;
+    margin-top:4px;
+}
+.cluster-summary{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.cluster-item{
+    border:1px solid #E5E7EB;
+    border-radius:14px;
+    padding:16px;
+    background:#fff;
+}
+
+.cluster-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+}
+
+.cluster-dot-big{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    flex-shrink:0;
+}
+
+.cluster-name{
+    font-size:14px;
+    font-weight:700;
+    color:#111827;
+}
+
+.cluster-count{
+    font-size:12px;
+    color:#6B7280;
+    margin-top:2px;
+}
+
+.cluster-stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:14px;
+}
+
+.cluster-stats div{
+    background:#F9FAFB;
+    border-radius:10px;
+    padding:10px;
+    text-align:center;
+}
+
+.cluster-stats b{
+    display:block;
+    font-size:15px;
+    color:#111827;
+}
+
+.cluster-stats span{
+    font-size:11px;
+    color:#6B7280;
+}
+
+.cluster-foods{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.cluster-foods span{
+    background:#EFF6FF;
+    color:#1D4ED8;
+    font-size:11px;
+    padding:6px 10px;
+    border-radius:999px;
+}
 
 .food-list { display: flex; flex-direction: column; gap: 8px; }
 .food-row {
@@ -70,40 +159,115 @@
 
 <!-- Main Grid -->
 <div class="grid-2" style="margin-bottom:24px;">
-    <!-- Distribusi Cluster -->
+   <!-- Karakteristik Cluster -->
     <div class="card">
         <div class="card-header">
             <div>
-                <div class="card-title">Distribusi Cluster</div>
-                <div class="card-subtitle">Jumlah data makanan hasil clustering K-Means berdasarkan kemiripan nutrisi</div>
+                <div class="card-title">
+                    Karakteristik Cluster
+                </div>
+
+                <div class="card-subtitle">
+                    Ringkasan pola nutrisi hasil clustering
+                </div>
             </div>
         </div>
+
         <div class="card-body">
-            <div class="dist-bar-wrap">
-                @php
-                    $clusterIcons = ['🔵','🟡','🟢','🟣'];
-                    $total = $stats['total_makanan'];
-                @endphp
-                @foreach($clusterDistribution as $i => $cluster)
-                <div class="dist-bar-row">
-                    <div class="dist-bar-label">{{ $clusterIcons[$i] }} {{ $cluster['label'] }}</div>
-                    <div class="dist-bar-track">
-                      @php
-                      $percent = $total > 0 ? ($cluster['count']/$total)*100 : 0;
-                      @endphp
-                      <div class="dist-bar-fill" 
-                          style="width: {{ $percent }}%; background: {{ $cluster['color'] }};">
-                      </div>
+
+            <div class="cluster-summary">
+
+                @foreach($clusterInfo as $cluster)
+
+                <div class="cluster-item">
+
+                    <div class="cluster-top">
+
+                        <div class="cluster-dot-big"
+                            style="background: {{ $cluster['color'] }}">
+                        </div>
+
+                        <div>
+
+                            <div class="cluster-name">
+                                {{ $cluster['label'] }}
+                            </div>
+
+                            <div class="cluster-count">
+                                {{ $cluster['count'] }} makanan
+                            </div>
+
+                        </div>
+
                     </div>
-                    <div class="dist-bar-count">{{ $cluster['count'] }}</div>
+
+                    <div class="cluster-stats">
+
+                        <div>
+                            <b>{{ $cluster['avg_kalori'] }}</b>
+                            <span>Kalori</span>
+                        </div>
+
+                        <div>
+                            <b>{{ $cluster['avg_protein'] }}g</b>
+                            <span>Protein</span>
+                        </div>
+
+                        <div>
+                            <b>{{ $cluster['avg_karbo'] }}g</b>
+                            <span>Karbo</span>
+                        </div>
+
+                    </div>
+
+                    <div class="cluster-foods">
+
+                        @php
+
+                        $contoh = [
+
+                            'Seimbang' => [
+                                'Nasi Putih',
+                                'Sayur Sop',
+                                'Telur Dadar'
+                            ],
+
+                            'Tinggi Karbohidrat' => [
+                                'Nasi Uduk',
+                                'Spaghetti',
+                                'Bihun Goreng'
+                            ],
+
+                            'Rendah Nutrisi' => [
+                                'Kerupuk',
+                                'Jeli',
+                                'Minuman Manis'
+                            ],
+
+                            'Tinggi Energi & Protein' => [
+                                'Ayam Goreng',
+                                'Beef Teriyaki',
+                                'Tempe Goreng'
+                            ]
+
+                        ];
+
+                        @endphp
+
+                        @foreach($contoh[$cluster['label']] ?? [] as $item)
+
+                        <span>{{ $item }}</span>
+
+                        @endforeach
+
+                    </div>
+
                 </div>
+
                 @endforeach
+
             </div>
 
-            <!-- Donut Chart -->
-            <div style="margin-top:24px;">
-                <canvas id="donutChart" width="220" height="220" style="display:block;margin:0 auto;max-width:220px;"></canvas>
-            </div>
         </div>
     </div>
 
@@ -141,21 +305,6 @@
     </div>
 </div>
 
-<!-- Nutrisi Average per Cluster -->
-<div class="card" style="margin-bottom:24px;">
-    <div class="card-header">
-        <div>
-            <div class="card-title">Perbandingan Rata-rata Nutrisi per Cluster</div>
-            <div class="card-subtitle">Nilai rata-rata kandungan nutrisi utama per kelompok</div>
-        </div>
-    </div>
-    <div class="card-body">
-        <div class="chart-wrap">
-            <canvas id="barAvgChart"></canvas>
-        </div>
-    </div>
-</div>
-
 <!-- Info Banner -->
 <div style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border:1px solid #BFDBFE;border-radius:16px;padding:20px 24px;display:flex;align-items:center;gap:16px;">
     <div style="font-size:32px;">📌</div>
@@ -173,7 +322,7 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const clusterData = @json($clusterDistribution);
+const clusterData = @json($clusterInfo);
 const foods = @json($foods);
 
 const clusterColors = ['#2563EB','#F59E0B','#10B981','#8B5CF6'];
@@ -195,46 +344,6 @@ foods.forEach(f => {
 const sortedClusters = Object.keys(clusterCount)
     .map(c => parseInt(c))
     .sort((a,b) => a - b);
-
-// Donut Chart
-const donutCtx = document.getElementById('donutChart').getContext('2d');
-new Chart(donutCtx, {
-    type: 'doughnut',
-    data: {
-        labels: sortedClusters.map(c => 
-            `Cluster ${c + 1} - ${clusterLabels[c]}`
-        ),
-        datasets: [{
-            data: sortedClusters.map(c => clusterCount[c]),
-            backgroundColor: sortedClusters.map(c => clusterColors[c]),
-            borderWidth: 3,
-            borderColor: '#fff',
-        }]
-    },
-    options: {
-        responsive: true,
-        cutout: '70%',
-        plugins: {
-            legend: {
-                display: false // 🔥 ini yang penting
-            }
-        }
-    }
-});
-
-// Bar Avg Chart
-const avgData = {};
-
-for (let c = 0; c < 4; c++) {
-    const cf = foods.filter(f => f.cluster === c);
-    if (cf.length === 0) continue;
-    avgData[c] = {
-        protein: (cf.reduce((s,f)=>s+f.protein,0)/cf.length).toFixed(1),
-        karbohidrat: (cf.reduce((s,f)=>s+f.karbohidrat,0)/cf.length).toFixed(1),
-        lemak: (cf.reduce((s,f)=>s+f.lemak,0)/cf.length).toFixed(1),
-        serat: (cf.reduce((s,f)=>s+f.serat,0)/cf.length).toFixed(1),
-    };
-}
 
 const barCtx = document.getElementById('barAvgChart').getContext('2d');
 new Chart(barCtx, {

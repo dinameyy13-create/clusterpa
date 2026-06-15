@@ -2,74 +2,92 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\FoodDataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class AIRecipeController extends Controller
 {
-    public function index()
+    protected $foodService;
+
+    public function __construct(FoodDataService $foodService)
     {
-        return view('ai-recipe');
+        $this->foodService = $foodService;
     }
 
+    /**
+     * Halaman awal
+     */
+    public function index()
+    {
+        $foods = collect($this->foodService->getClusteredFoods())
+            ->where('kategori_data', 'bahan')
+            ->sortBy('nama')
+            ->values();
+
+        // Variabel hasil diinisialisasi null agar tidak error di blade
+        $hasil = null;
+
+        return view('ai-recipe', compact('foods', 'hasil'));
+    }
+
+    /**
+     * Generate rekomendasi AI
+     */
     public function generate(Request $request)
     {
-        // Validasi input
         $request->validate([
-            'bahan' => 'required|string|max:255',
+            'bahan' => 'required|array|min:1',
         ], [
-            'bahan.required' => 'Silakan masukkan bahan terlebih dahulu.',
+            'bahan.required' => 'Silakan pilih minimal satu bahan.',
         ]);
 
-        $bahan = trim($request->input('bahan'));
+        $allFoods = collect($this->foodService->getClusteredFoods());
+
+        $foods = $allFoods
+            ->where('kategori_data', 'bahan')
+            ->sortBy('nama')
+            ->values();
+
+        $bahanUser = implode(', ', $request->bahan);
 
         $prompt = "
-        Kamu adalah AI rekomendasi masakan Indonesia.
+        Kamu adalah ahli kuliner Indonesia. 
+        Saya punya bahan: {$bahanUser}. 
+        Berikan 3 rekomendasi menu masakan Indonesia. 
 
-        ATURAN:
-        - gunakan nama masakan Indonesia yang benar-benar ada
-        - jangan mengarang nama makanan
-        - gunakan masakan rumahan yang realistis
-        - maksimal 3 rekomendasi
-        - penjelasan singkat saja
+        Format jawaban HARUS persis seperti ini untuk setiap menu:
 
-        Format:
-        1. Nama masakan
-        - bahan tambahan:
-        - penjelasan:
+        1. Nama Menu
+        - Bahan tambahan: [Bahan utama]
+        - Analisis Nutrisi: [Perkiraan kalori, protein, serat]
 
-        Bahan tersedia:
-        $bahan
+        Jawab dalam Bahasa Indonesia dan gunakan baris baru untuk setiap poin.
         ";
 
-        $response = Http::timeout(180)->post(
-            'http://127.0.0.1:11434/api/generate',
-            [
-                'model' => 'qwen2.5:3b',
-                'prompt' => $prompt,
-                'stream' => false,
-                'options' => [
-                    'temperature' => 0.3,
-                    'num_predict' => 300,
-                ],
-            ]
-        );
+        try {
+            $response = Http::timeout(60)
+                ->post(
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . env('GEMINI_API_KEY'),
+                    [
+                        "contents" => [
+                            ["parts" => [["text" => $prompt]]]
+                        ]
+                    ]
+                );
 
-        if (!$response->successful()) {
+            // Cek apakah API sukses
+            if ($response->successful()) {
+                $hasil = $response->json('candidates.0.content.parts.0.text') ?? 'Tidak ada jawaban dari AI.';
+            } else {
+                $hasil = 'Gagal terhubung ke AI. Silakan coba lagi.';
+            }
 
-            return redirect()
-                ->route('ai.index')
-                ->withErrors([
-                    'ai' => 'Gagal mendapatkan respons dari AI.',
-                ])
-                ->withInput();
-        }
+            return view('ai-recipe', compact('foods', 'hasil'));
 
-        $hasil = $response->json('response') ?? 'Tidak ada hasil.';
-
-        return redirect()
-            ->route('ai.index')
-            ->with('hasil', $hasil)
-            ->withInput();
+        } catch (\Exception $e) {
+                // Ubah ini untuk melihat error aslinya di layar
+                dd($e->getMessage()); 
+            }
     }
 }

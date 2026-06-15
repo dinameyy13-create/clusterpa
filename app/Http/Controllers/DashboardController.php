@@ -18,17 +18,67 @@ class DashboardController extends Controller
         $stats = $this->foodService->getStats();
         $foods = $this->foodService->getClusteredFoods();
 
-        $clusterDistribution = [];
+        $clusterInfo = [];
+
+        $clusterColors = [
+            '#2563EB',
+            '#F59E0B',
+            '#10B981',
+            '#8B5CF6'
+        ];
+
+        $clusterLabels = [
+            0 => 'Seimbang',
+            1 => 'Tinggi Karbohidrat',
+            2 => 'Rendah Nutrisi',
+            3 => 'Tinggi Energi & Protein',
+        ];
+
         for ($i = 0; $i < 4; $i++) {
-            $clusterFoods = array_filter($foods, fn($f) => $f['cluster'] === $i);
-            $kmeans = new \App\Services\KMeansService(4);
-            $clusterDistribution[] = [
-                'label' => $kmeans->getClusterLabel($i),
-                'color' => $kmeans->getClusterColor($i),
-                'count' => count($clusterFoods),
+
+            $clusterFoods = array_filter(
+                $foods,
+                fn($f) => $f['cluster'] === $i
+            );
+
+            $count = count($clusterFoods);
+
+            $avgProtein =
+                $count > 0
+                ? round(array_sum(array_column($clusterFoods, 'protein')) / $count, 1)
+                : 0;
+
+            $avgKarbo =
+                $count > 0
+                ? round(array_sum(array_column($clusterFoods, 'karbohidrat')) / $count, 1)
+                : 0;
+
+            $avgKalori =
+                $count > 0
+                ? round(array_sum(array_column($clusterFoods, 'kalori')) / $count, 1)
+                : 0;
+
+            $sampleFoods = array_slice(
+                array_column($clusterFoods, 'nama'),
+                0,
+                4
+            );
+
+            $clusterInfo[] = [
+                'label' => $clusterLabels[$i],
+                'color' => $clusterColors[$i],
+                'count' => $count,
+                'avg_protein' => $avgProtein,
+                'avg_karbo' => $avgKarbo,
+                'avg_kalori' => $avgKalori,
+                'samples' => $sampleFoods,
             ];
         }
 
-        return view('dashboard', compact('stats', 'clusterDistribution', 'foods'));
+        return view('dashboard', compact(
+            'stats',
+            'foods',
+            'clusterInfo'
+        ));
     }
 }

@@ -14,55 +14,202 @@ class InsightController extends Controller
 
         $clusters = [];
 
-        // loop sesuai display (1–4)
         for ($i = 1; $i <= 4; $i++) {
 
-            // ambil berdasarkan cluster_display
+            // Ambil data berdasarkan cluster
             $clusterFoods = array_values(array_filter(
                 $foods,
-                fn($f) => $f['cluster_display'] === $i
+                fn($f) => ($f['cluster_display'] ?? 0) === $i
             ));
 
             $foodsCollect = collect($clusterFoods);
 
-            $avgKalori = $foodsCollect->avg('kalori') ?? 0;
-            $avgProtein = $foodsCollect->avg('protein') ?? 0;
+            // Rata-rata nutrisi
+            $avgKalori = round($foodsCollect->avg('kalori') ?? 0);
+            $avgProtein = round($foodsCollect->avg('protein') ?? 0, 1);
+            $avgKarbo = round($foodsCollect->avg('karbohidrat') ?? 0, 1);
+            $avgLemak = round($foodsCollect->avg('lemak') ?? 0, 1);
+            $avgSerat = round($foodsCollect->avg('serat') ?? 0, 1);
 
-            // ambil kategori dari service (INI KUNCI NYA 🔥)
-            $kategori = $clusterFoods[0]['kategori'] ?? 'Cluster '.$i;
+            // Nama kategori cluster
+            $kategori = $clusterFoods[0]['kategori'] ?? ('Cluster ' . $i);
 
-            // ambil label lengkap kalau mau
-            $labelFull = $clusterFoods[0]['cluster_label'] ?? ('Cluster '.$i.' - '.$kategori);
+            $menuKeywords = [
+                'nasi',
+                'bubur',
+                'sup',
+                'soto',
+                'sayur',
+                'capcay',
+                'tumis',
+                'semur',
+                'rawon',
+                'gulai',
+                'rendang',
+                'bakso',
+                'mie',
+                'mi ',
+                'omelet',
+                'telur',
+                'ayam',
+                'ikan',
+                'daging',
+                'pepes',
+                'tim',
+                'sate',
+                'perkedel',
+                'lontong',
+                'gado',
+                'pecel',
+                'sop',
+            ];
 
-            // ambil TOP makanan terbaik (ranking sederhana)
-            $bestFoods = $foodsCollect
-                ->sortByDesc(fn($f) => ($f['protein'] * 2) + ($f['serat']) + ($f['vit_c']))
+            $bestFoods = collect($clusterFoods)
+
+                // hanya makanan
+                ->where('kategori_data', 'makanan')
+
+                // prioritaskan makanan siap saji
+                ->filter(function ($food) use ($menuKeywords) {
+
+                    $nama = strtolower($food['nama']);
+
+                    foreach ($menuKeywords as $keyword) {
+                        if (str_contains($nama, $keyword)) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                })
+
+                // buang bahan/olahan yang kurang representatif
+                ->reject(function ($food) {
+
+                    $nama = strtolower($food['nama']);
+
+                    return
+                        str_contains($nama, 'asin') ||
+                        str_contains($nama, 'kering') ||
+                        str_contains($nama, 'bubuk') ||
+                        str_contains($nama, 'vetsin') ||
+                        str_contains($nama, 'msg');
+                })
+
+                // urutkan berdasarkan skor nutrisi
+                ->sortByDesc(function ($f) {
+
+                    return
+                        (($f['protein'] ?? 0) * 2) +
+                        (($f['serat'] ?? 0) * 1.5) +
+                        (($f['karbohidrat'] ?? 0) * 0.5);
+                })
+
                 ->take(8)
                 ->values();
 
+            if ($bestFoods->isEmpty()) {
+
+                $bestFoods = collect($clusterFoods)
+
+                    ->where('kategori_data', 'makanan')
+
+                    ->take(8)
+
+                    ->values();
+            }
+
+            if ($bestFoods->isEmpty()) {
+
+                $bestFoods = collect($clusterFoods)
+
+                    ->take(8)
+
+                    ->values();
+            }
+
+            // ===========================
+            // Karakteristik cluster
+            // ===========================
+            $karakteristik = [];
+
+            if ($avgProtein >= 15) {
+                $karakteristik[] = 'Protein tinggi';
+            }
+
+            if ($avgKarbo >= 30) {
+                $karakteristik[] = 'Karbohidrat tinggi';
+            }
+
+            if ($avgLemak >= 15) {
+                $karakteristik[] = 'Lemak relatif tinggi';
+            }
+
+            if ($avgSerat >= 5) {
+                $karakteristik[] = 'Serat tinggi';
+            }
+
+            if ($avgKalori >= 300) {
+                $karakteristik[] = 'Energi tinggi';
+            }
+
+            if (empty($karakteristik)) {
+                $karakteristik[] = 'Komposisi nutrisi relatif seimbang';
+            }
+
+            // ===========================
+            // Peran utama berdasarkan kategori
+            // ===========================
+            switch ($kategori) {
+
+                case 'Seimbang':
+                    $peranUtama = 'Memiliki komposisi nutrisi yang relatif seimbang sehingga cocok sebagai pilihan menu harian.';
+                    break;
+
+                case 'Tinggi Karbohidrat':
+                    $peranUtama = 'Didominasi kandungan karbohidrat sehingga dapat menjadi sumber energi utama untuk aktivitas sehari-hari.';
+                    break;
+
+                case 'Rendah Nutrisi':
+                    $peranUtama = 'Memiliki kandungan gizi yang relatif rendah sehingga sebaiknya dikombinasikan dengan makanan bergizi lainnya.';
+                    break;
+
+                case 'Tinggi Energi & Protein':
+                    $peranUtama = 'Mengandung energi dan protein yang relatif tinggi sehingga baik untuk mendukung pertumbuhan dan perbaikan jaringan tubuh.';
+                    break;
+
+                default:
+                    $peranUtama = 'Memiliki karakteristik nutrisi tertentu berdasarkan hasil clustering.';
+                    break;
+            }
+
+            // ===========================
+            // Simpan data cluster
+            // ===========================
             $clusters[] = [
+
                 'id' => $i,
 
-                // 🔥 pakai dari service
-                'label' => $clusterFoods[0]['kategori'] ?? 'Cluster '.$i,
-                'label_full' => $labelFull,
+                'label' => $kategori,
 
-                'description' => 'Kelompok makanan dengan karakteristik '.$kategori,
+                'label_full' => 'Cluster ' . $i . ' - ' . $kategori,
+
+                'description' =>
+                    "Rata-rata {$avgKalori} kcal, {$avgProtein} g protein, {$avgKarbo} g karbohidrat, {$avgLemak} g lemak, dan {$avgSerat} g serat.",
 
                 'foods' => $bestFoods,
+
                 'count' => count($clusterFoods),
 
-                // insight
-                'avg_kalori' => round($avgKalori),
-                'avg_protein' => round($avgProtein, 1),
+                'avg_kalori' => $avgKalori,
+                'avg_protein' => $avgProtein,
+                'avg_karbohidrat' => $avgKarbo,
+                'avg_lemak' => $avgLemak,
+                'avg_serat' => $avgSerat,
 
-                'peran_utama' => match($i) {
-                    1 => 'Menyeimbangkan kebutuhan nutrisi harian',
-                    2 => 'Menyediakan energi utama untuk aktivitas',
-                    3 => 'Perlu dikontrol karena rendah nutrisi',
-                    4 => 'Mendukung pertumbuhan dan energi tinggi',
-                    default => '-'
-                },
+                'karakteristik' => $karakteristik,
+
+                'peran_utama' => $peranUtama,
             ];
         }
 
