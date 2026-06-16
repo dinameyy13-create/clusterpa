@@ -6,7 +6,83 @@
 
 @push('styles')
 <style>
-.table-scroll { overflow-x: auto; }
+.main-wrapper {
+    margin-left: var(--sidebar-w);
+    width: calc(100% - var(--sidebar-w));
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.topbar{
+    height: var(--header-h);
+    background: white;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 12px;
+}
+
+.data-table{
+    width:100%;
+    min-width:1400px; /* boleh 1300-1500 */
+    border-collapse:separate;
+    border-spacing:0;
+}
+.data-table td:nth-child(2),
+.data-table th:nth-child(2){
+    min-width:220px;
+    white-space:nowrap;
+}
+.data-table td:nth-child(3),
+.data-table th:nth-child(3){
+    min-width:130px;
+    white-space:nowrap;
+}
+.data-table td:nth-child(4),
+.data-table th:nth-child(4){
+    min-width:170px;
+    white-space:nowrap;
+}
+.data-table th,
+.data-table td{
+    white-space:nowrap;
+}
+.table-scroll{
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+}
+.filter-bar{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.filter-bar > *{
+    flex-shrink:0;
+}
+
+.filter-select{
+    min-width:180px;
+    height:44px;
+    padding:0 14px;
+    border:1.5px solid #DBEAFE;
+    border-radius:10px;
+    background:#fff;
+    color:#334155;
+    font-size:14px;
+    font-family:inherit;
+    cursor:pointer;
+}
+
+.filter-select:focus{
+    outline:none;
+    border-color:#2563EB;
+}
+
 .nutrisi-pill {
     display: inline-block;
     padding: 2px 8px;
@@ -62,6 +138,12 @@
     cursor: pointer;
 }
 
+.kategori-filter{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+}
+
 #pagination button {
     padding: 6px 10px;
     border-radius: 6px;
@@ -72,6 +154,93 @@
 
 #pagination button:hover {
     background: #f1f5f9;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width:768px){
+
+    .filter-bar{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .filter-input,
+    .dropdown-filter,
+    #filterKategori,
+    #clusterFilter,
+    .filter-bar button{
+        width:100%;
+        max-width:none !important;
+    }
+
+    #dropdownBtn{
+        width:100%;
+    }
+
+    .dropdown-menu{
+        width:100%;
+        position:relative;
+        top:6px;
+    }
+
+    .table-scroll{
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    #pagination{
+        justify-content:center;
+    }
+
+    .topbar{
+        padding: 0 14px;
+        gap: 8px;
+    }
+
+    .sidebar-toggle{
+        display: flex;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .topbar-title{
+        flex: 1;
+    }
+
+    .topbar-title h1{
+        font-size: 18px;
+        white-space: nowrap;
+    }
+
+    .sidebar-toggle{
+        display: flex;
+        flex-shrink: 0;
+        padding: 4px;
+        margin: 0;
+    }
+
+    .topbar-title{
+        flex: 1;
+        min-width: 0;
+    }
+
+    .topbar-title h1{
+        font-size: 18px;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .breadcrumb{
+        margin-top: 2px;
+        font-size: 11px;
+    }
+
 }
 </style>
 @endpush
@@ -92,23 +261,23 @@
     </div>
     <div class="card-body" style="padding-top:16px;">
         <!-- Filter Bar -->
-        <div class="filter-bar">
+        <div class="filter-bar"style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px;">
             <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Cari nama makanan..." style="flex:1;min-width:200px;max-width:300px;">
             <div class="dropdown-filter">
             <button id="dropdownBtn">Pilih Cluster ▾</button>
             <div id="dropdownMenu" class="dropdown-menu">
-                <label><input type="checkbox" value="0"> Cluster 1 - Seimbang</label>
-                <label><input type="checkbox" value="1"> Cluster 2 - Tinggi Karbohidrat</label>
-                <label><input type="checkbox" value="2"> Cluster 3 - Rendah Nutrisi</label>
-                <label><input type="checkbox" value="3"> Cluster 4 - Tinggi Energi & Protein</label>
+                <label><input type="checkbox" value="0"> Cluster 1 - Protein Sedang</label>
+                <label><input type="checkbox" value="1"> Cluster 2 - Tinggi Energi Lengkap</label>
+                <label><input type="checkbox" value="2"> Cluster 3 - Tinggi Karbohidrat</label>
+                <label><input type="checkbox" value="3"> Cluster 4 - Seimbang</label>
             </div>
             </div>
-             <select id="filterKategori">
-                <option value="all">Semua</option>
-                <option value="makanan">Makanan</option>
-                <option value="bahan">Bahan</option>
+            <select id="filterKategori" class="filter-select">
+                <option value="all">Semua Kategori</option>
+                <option value="makanan">🍱 Makanan</option>
+                <option value="bahan">🥬 Bahan</option>
             </select>
-            <button onclick="resetFilter()" style="padding:9px 16px;border-radius:8px;border:1.5px solid #DBEAFE;background:white;cursor:pointer;font-size:13px;color:#64748B;font-family:inherit;">Reset</button>
+            <button type="button" onclick="resetFilter()" style="padding:9px 16px;border-radius:8px;border:1.5px solid #DBEAFE;background:white;cursor:pointer;font-size:13px;color:#64748B;font-family:inherit;">Reset</button>
         </div>
 
         <!-- Table -->
@@ -135,7 +304,8 @@
                 </tbody>
             </table>
         </div>
-        <div id="pagination" style="margin-top:16px;display:flex;gap:6px;flex-wrap:wrap;"></div>
+        <div id="pagination"style="margin-top:20px;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;">
+</div>
     </div>
 </div>
 
@@ -169,7 +339,32 @@ const allFoods = @json($foods);
 let filteredData = [...allFoods]; 
 
 const clusterColors = ['#2563EB','#F59E0B','#10B981','#8B5CF6'];
-const clusterLabels = ['Tinggi Protein','Tinggi Karbohidrat','Seimbang & Bergizi','Tinggi Serat & Vitamin'];
+const clusterLabels = [
+    'Protein Sedang',
+    'Tinggi Energi Lengkap',
+    'Tinggi Karbohidrat',
+    'Seimbang'
+];
+
+const sidebar = document.getElementById('sidebar');
+const toggle = document.getElementById('sidebarToggle');
+
+toggle?.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+});
+
+document.addEventListener('click', function (e) {
+
+    if (
+        window.innerWidth <= 768 &&
+        !sidebar.contains(e.target) &&
+        !toggle.contains(e.target)
+    ) {
+        sidebar.classList.remove('open');
+    }
+
+});
+
 const dropdownBtn = document.getElementById('dropdownBtn');
 const dropdownMenu = document.getElementById('dropdownMenu');
 
@@ -251,12 +446,20 @@ function renderTable(data) {
                     ${f.kategori}
                 </span>
             </td>
-            <td>
-                <span class="cluster-badge" style="background:${color}18;color:${color};">
-                    <span style="background:${color};"></span>${c}
+            <td style="text-align:center;">
+                <span class="cluster-badge"
+                    style="
+                        background:${color}18;
+                        color:${color};
+                        display:inline-flex;
+                        align-items:center;
+                        justify-content:center;
+                        min-width:34px;
+                    ">
+                    ${c}
                 </span>
             </td>
-            <td style="text-align:center;"><span class="nutrisi-pill">${f.kalori}</span></td>
+            <td style="text-align:center;"><span class="nutrisi-pill">${(parseFloat(f.kalori) || 0).toFixed(2)}</span></td>
             <td style="text-align:center;"><span class="nutrisi-pill" style="background:#EFF6FF;color:#2563EB;">${f.protein}</span></td>
             <td style="text-align:center;"><span class="nutrisi-pill" style="background:#FFFBEB;color:#D97706;">${f.karbohidrat}</span></td>
             <td style="text-align:center;"><span class="nutrisi-pill">${f.lemak}</span></td>

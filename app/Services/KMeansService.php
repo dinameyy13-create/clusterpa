@@ -137,10 +137,10 @@ class KMeansService
     public function getClusterLabel(int $cluster): string
     {
         return match ($cluster) {
-            0 => 'Tinggi Protein',
-            1 => 'Tinggi Karbohidrat',
-            2 => 'Seimbang & Bergizi',
-            3 => 'Tinggi Serat & Vitamin',
+            0 => 'Protein Sedang',
+            1 => 'Tinggi Energi Lengkap',
+            2 => 'Tinggi Karbohidrat',
+            3 => 'Seimbang',
             default => 'Cluster ' . ($cluster + 1),
         };
     }
@@ -159,11 +159,16 @@ class KMeansService
     public function getClusterDescription(int $cluster): string
     {
         return match ($cluster) {
-            0 => 'Makanan dengan kandungan protein tinggi, sangat baik untuk pertumbuhan otot dan perbaikan jaringan tubuh anak.',
-            1 => 'Makanan sumber energi utama dengan karbohidrat tinggi, cocok sebagai menu pokok harian dalam program MBG.',
-            2 => 'Makanan dengan profil nutrisi seimbang, ideal untuk mendukung pertumbuhan optimal dan pencegahan stunting.',
-            3 => 'Makanan kaya serat dan vitamin, sangat baik untuk sistem imunitas dan kesehatan pencernaan anak.',
-            default => 'Kelompok makanan dengan karakteristik nutrisi khusus.',
+
+            0 => 'Kelompok makanan dengan kandungan protein sedang dan nutrisi yang cukup baik untuk menu pendamping harian.',
+
+            1 => 'Kelompok makanan dengan kandungan energi, protein, dan lemak tinggi yang cocok untuk mendukung kebutuhan gizi.',
+
+            2 => 'Kelompok makanan dengan dominasi karbohidrat tinggi sebagai sumber energi utama dalam menu MBG.',
+
+            3 => 'Kelompok makanan dengan komposisi nutrisi yang relatif seimbang untuk konsumsi harian.',
+
+            default => 'Kelompok makanan dengan karakteristik nutrisi tertentu.',
         };
     }
 }

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MBG Nutrisi - Pengelompokan Makanan K-Means</title>
+    <link rel="shortcut icon" href="{{ asset('images/makanan/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('images/makanan/logo.png') }}" sizes="500x500" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('images/makanan/logo.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -277,9 +280,10 @@
             MBG Nutrisi
         </a>
         <div class="nav-links">
-            <a href="{{ route('dashboard') }}">Dashboard</a>
             <a href="{{ route('clustering') }}">Clustering</a>
             <a href="{{ route('grafik') }}">Grafik</a>
+            <a href="{{ route('rekomendasi') }}">MBG & Stunting</a>
+            <a href="{{ route('ai.index') }}">Menu AI</a>
             <a href="{{ route('insight') }}">Insight</a>
             <a href="{{ route('dashboard') }}" class="btn-primary">Mulai Eksplorasi →</a>
         </div>
@@ -309,19 +313,19 @@
                 <div class="cluster-visual">
                     <div class="cluster-pill" style="background:#EFF6FF; color:#2563EB; border: 1.5px solid #BFDBFE;">
                         <span class="cp-dot" style="background:#2563EB;"></span>
-                        Tinggi Protein
+                        Protein Sedang
                     </div>
                     <div class="cluster-pill" style="background:#FFFBEB; color:#D97706; border: 1.5px solid #FDE68A;">
                         <span class="cp-dot" style="background:#F59E0B;"></span>
-                        Tinggi Karbohidrat
+                        Tinggi Energi
                     </div>
                     <div class="cluster-pill" style="background:#ECFDF5; color:#059669; border: 1.5px solid #A7F3D0;">
                         <span class="cp-dot" style="background:#10B981;"></span>
-                        Seimbang & Bergizi
+                        Tinggi Karbohidrat
                     </div>
                     <div class="cluster-pill" style="background:#F5F3FF; color:#7C3AED; border: 1.5px solid #DDD6FE;">
                         <span class="cp-dot" style="background:#8B5CF6;"></span>
-                        Tinggi Serat & Vitamin
+                        Seimbang
                     </div>
                 </div>
             </div>

@@ -6,6 +6,15 @@
 
 @push('styles')
 <style>
+.topbar{
+    height: var(--header-h);
+    background: white;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 12px;
+}
 .chart-tabs {
     display: flex; gap: 4px;
     background: var(--surface-3);
@@ -58,6 +67,144 @@
 .cib-label { font-size: 11px; font-weight: 700; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
 .cib-value { font-size: 20px; font-weight: 800; font-family: 'Space Grotesk', sans-serif; }
 .cib-sub { font-size: 11px; opacity: 0.7; }
+
+/* =======================================================
+   RESPONSIVE GLOBAL
+======================================================= */
+
+html,
+body{
+    overflow-x:hidden;
+}
+
+/* ---------- Tablet ---------- */
+
+@media (max-width:1024px){
+
+    .grid-2,
+    .grid-3{
+        grid-template-columns:1fr;
+    }
+
+    .page-content{
+        padding:20px;
+    }
+
+}
+
+
+/* ---------- Mobile ---------- */
+
+@media (max-width:768px){
+
+    /* Sidebar */
+
+    .sidebar{
+        transform:translateX(-100%);
+        z-index:999;
+    }
+
+    .sidebar.open{
+        transform:translateX(0);
+    }
+
+    /* Main */
+
+    .main-wrapper{
+        margin-left:0;
+        width:100%;
+    }
+
+    /* Topbar */
+
+    .topbar{
+        padding:0 14px;
+        gap:10px;
+    }
+
+    .sidebar-toggle{
+        display:flex;
+        width:36px;
+        height:36px;
+        flex-shrink:0;
+        align-items:center;
+        justify-content:center;
+    }
+
+    .topbar-title{
+        flex:1;
+    }
+
+    .topbar-title h1{
+        font-size:18px;
+        line-height:1.2;
+    }
+
+    .breadcrumb{
+        font-size:11px;
+        margin-top:2px;
+    }
+
+    .topbar-info{
+        display:none;
+    }
+
+    /* Content */
+
+    .page-content{
+        padding:14px;
+    }
+
+    /* Card */
+
+    .card-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+    }
+
+    .card-body{
+        padding:16px;
+    }
+
+    /* Grid */
+
+    .stats-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+
+/* ---------- HP kecil ---------- */
+
+@media (max-width:480px){
+
+    .page-content{
+        padding:10px;
+    }
+
+    .card-header{
+        padding:14px;
+    }
+
+    .card-body{
+        padding:14px;
+    }
+
+    .section-title{
+        font-size:20px;
+    }
+
+    .section-desc{
+        font-size:12px;
+    }
+
+    .topbar-title h1{
+        font-size:17px;
+    }
+
+}
 </style>
 @endpush
 
@@ -117,9 +264,27 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+const sidebar = document.getElementById('sidebar');
+const toggle = document.getElementById('sidebarToggle');
+
+toggle?.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+});
+
+document.addEventListener('click', function (e) {
+
+    if (
+        window.innerWidth <= 768 &&
+        !sidebar.contains(e.target) &&
+        !toggle.contains(e.target)
+    ) {
+        sidebar.classList.remove('open');
+    }
+
+});
+
 const clusterColors = ['#2563EB','#F59E0B','#10B981','#8B5CF6'];
-const clusterLabels = ['Tinggi Protein','Tinggi Karbohidrat','Seimbang & Bergizi','Tinggi Serat & Vitamin'];
-const clusterEmojis = ['🥩','🍚','🥗','🥦'];
+const clusterEmojis = ['🥩','🥦','🍚','🥗'];
 
 let scatterChart, barChart;
 const radarCharts = {};
@@ -142,38 +307,86 @@ fetch('{{ route("grafik.data") }}')
     });
     
     function initScatter(scatterData) {
-        console.log("Scatter jalan", scatterData);
+    console.log("Scatter jalan", scatterData);
 
-        const datasets = clusterColors.map((color, c) => ({
-            label: clusterLabels[c],
-            data: scatterData
-                .filter(d => d.cluster === c)
-                .map(d => ({
-                    x: d.x,
-                    y: d.y,
-                    nama: d.nama
-                })),
-            backgroundColor: color,
-            pointRadius: 5
-        }));
+    const datasets = clusterColors.map((color, c) => ({
+        label:
+        scatterData.find(d => d.cluster === c)?.label ??
+        `Cluster ${c+1}`,
+        data: scatterData
+            .filter(d => d.cluster === c)
+            .map(d => ({
+                x: d.x,
+                y: d.y,
+                nama: d.nama
+            })),
+        backgroundColor: color + 'BB',
+        borderColor: color,
+        borderWidth: 1,
+        pointRadius: 5,
+        pointHoverRadius: 7
+    }));
 
-        new Chart(document.getElementById('scatterChart'), {
-            type: 'scatter',
-            data: { datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        title: { display: true, text: 'Protein' }
-                    },
-                    y: {
-                        title: { display: true, text: 'Kalori' }
+    scatterChart = new Chart(document.getElementById('scatterChart'), {
+        type: 'scatter',
+        data: {
+            datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            interaction: {
+                mode: 'nearest',
+                intersect: true
+            },
+
+            onHover: (event, elements) => {
+                event.native.target.style.cursor =
+                    elements.length ? 'pointer' : 'default';
+            },
+
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+
+                            const point = context.raw;
+                            const cluster =
+                                context.dataset.label;
+
+                            return [
+                                `Makanan : ${point.nama}`,
+                                `Cluster : ${cluster}`,
+                                `Protein : ${point.x} g`,
+                                `Kalori : ${point.y} kcal`
+                            ];
+                        }
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Protein (gram)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Kalori (kkal)'
                     }
                 }
             }
-        });
-    }
+        }
+    });
+}
 
 function initBar(barData) {
     // Cluster info bar
@@ -225,7 +438,11 @@ function initRadar(barData) {
 
         // Normalize to 0-100 for radar
         const maxVals = keys.map((k,ki) => Math.max(...barData.map(bd => bd[k] || 0)));
-        const vals = keys.map((k,ki) => maxVals[ki] > 0 ? ((b[k]/maxVals[ki])*100).toFixed(1) : 0);
+        const vals = keys.map((k,ki) =>
+            maxVals[ki] > 0
+                ? Number(((b[k] / maxVals[ki]) * 100).toFixed(1))
+                : 0
+        );
 
         radarCharts[i] = new Chart(canvas.getContext('2d'), {
             type: 'radar',

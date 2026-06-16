@@ -6,6 +6,15 @@
 
 @push('styles')
 <style>
+.topbar{
+    height: var(--header-h);
+    background: white;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 12px;
+}
 .mbg-hero {
     background: linear-gradient(135deg, #1E40AF 0%, #2563EB 60%, #60A5FA 100%);
     border-radius: 16px;
@@ -86,6 +95,143 @@
     border: 1px solid var(--border);
     padding: 3px 8px;
     border-radius: 12px;
+}
+/* =======================================================
+   RESPONSIVE GLOBAL
+======================================================= */
+
+html,
+body{
+    overflow-x:hidden;
+}
+
+/* ---------- Tablet ---------- */
+
+@media (max-width:1024px){
+
+    .grid-2,
+    .grid-3{
+        grid-template-columns:1fr;
+    }
+
+    .page-content{
+        padding:20px;
+    }
+
+}
+
+
+/* ---------- Mobile ---------- */
+
+@media (max-width:768px){
+
+    /* Sidebar */
+
+    .sidebar{
+        transform:translateX(-100%);
+        z-index:999;
+    }
+
+    .sidebar.open{
+        transform:translateX(0);
+    }
+
+    /* Main */
+
+    .main-wrapper{
+        margin-left:0;
+        width:100%;
+    }
+
+    /* Topbar */
+
+    .topbar{
+        padding:0 14px;
+        gap:10px;
+    }
+
+    .sidebar-toggle{
+        display:flex;
+        width:36px;
+        height:36px;
+        flex-shrink:0;
+        align-items:center;
+        justify-content:center;
+    }
+
+    .topbar-title{
+        flex:1;
+    }
+
+    .topbar-title h1{
+        font-size:18px;
+        line-height:1.2;
+    }
+
+    .breadcrumb{
+        font-size:11px;
+        margin-top:2px;
+    }
+
+    .topbar-info{
+        display:none;
+    }
+
+    /* Content */
+
+    .page-content{
+        padding:14px;
+    }
+
+    /* Card */
+
+    .card-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+    }
+
+    .card-body{
+        padding:16px;
+    }
+
+    /* Grid */
+
+    .stats-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+
+/* ---------- HP kecil ---------- */
+
+@media (max-width:480px){
+
+    .page-content{
+        padding:10px;
+    }
+
+    .card-header{
+        padding:14px;
+    }
+
+    .card-body{
+        padding:14px;
+    }
+
+    .section-title{
+        font-size:20px;
+    }
+
+    .section-desc{
+        font-size:12px;
+    }
+
+    .topbar-title h1{
+        font-size:17px;
+    }
+
 }
 </style>
 @endpush
@@ -224,5 +370,26 @@ $clusterManfaat = [
     </div>
 </div>
 @endforeach
-
 @endsection
+@push('scripts')
+<script>
+    const sidebar = document.getElementById('sidebar');
+const toggle = document.getElementById('sidebarToggle');
+
+toggle?.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+});
+
+document.addEventListener('click', function (e) {
+
+    if (
+        window.innerWidth <= 768 &&
+        !sidebar.contains(e.target) &&
+        !toggle.contains(e.target)
+    ) {
+        sidebar.classList.remove('open');
+    }
+
+});
+</script>
+@endpush

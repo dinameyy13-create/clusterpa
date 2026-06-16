@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'MBG Nutrisi') | Pengelompokan Makanan K-Means</title>
+    <link rel="shortcut icon" href="{{ asset('images/makanan/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('images/makanan/logo.png') }}" sizes="500x500" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('images/makanan/logo.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -581,36 +584,148 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ========== RESPONSIVE ========== */
+
 @media (max-width: 1024px) {
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .page-content{
+        padding:20px;
+    }
+
 }
 
-@media (max-width: 768px) {
-    .sidebar {
-        transform: translateX(-100%);
+@media (max-width:768px){
+
+    /* Sidebar */
+
+    .sidebar{
+        transform:translateX(-100%);
     }
 
-    .sidebar.open {
-        transform: translateX(0);
+    .sidebar.open{
+        transform:translateX(0);
     }
 
-    .main-wrapper {
-        margin-left: 0;
+    .main-wrapper{
+        margin-left:0;
+        width:100%;
     }
 
-    .sidebar-toggle {
-        display: flex;
+    .sidebar-toggle{
+        display:flex;
     }
 
-    .page-content { padding: 16px; }
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-    .topbar-info { display: none; }
+    .page-content{
+        padding:14px;
+        overflow-x:hidden;
+    }
+
+    /* Topbar */
+
+    .topbar{
+        padding:0 14px;
+    }
+
+    .topbar-title h1{
+        font-size:16px;
+    }
+
+    .topbar-info{
+        display:none;
+    }
+
+    /* Stats */
+
+    .stats-grid{
+        grid-template-columns:1fr;
+    }
+
+    /* Card */
+
+    .card-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:10px;
+    }
+
+    .card-body{
+        padding:16px;
+    }
+
+    /* Filter */
+
+    .filter-bar{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .filter-bar>*{
+        width:100% !important;
+        max-width:100% !important;
+    }
+
+    .filter-input,
+    .filter-select,
+    button,
+    select{
+        width:100%;
+    }
+
+    /* Table */
+
+    .table-scroll{
+        width:100%;
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    .data-table{
+        min-width:1100px;
+    }
+
+    /* Section */
+
+    .section-title{
+        font-size:20px;
+    }
+
+    .section-desc{
+        font-size:13px;
+    }
+
 }
 
-@media (max-width: 480px) {
-    .stats-grid { grid-template-columns: 1fr; }
-}
+@media (max-width:480px){
 
+    .page-content{
+        padding:10px;
+    }
+
+    .card-header{
+        padding:14px;
+    }
+
+    .card-body{
+        padding:14px;
+    }
+
+    .stat-card{
+        padding:16px;
+    }
+
+    .stat-value{
+        font-size:26px;
+    }
+
+    .section-title{
+        font-size:18px;
+    }
+
+}
 /* ========== SCROLLBAR ========== */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -646,7 +761,7 @@ body {
                 <span class="nav-group-label">Menu Utama</span>
                 <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    <span>dashboard</span>
+                    <span>Dashboard</span>
                 </a>
             </div>
             <div class="nav-group">
@@ -663,11 +778,11 @@ body {
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                     </svg>
-                    <span>Rekomendasi Menu MBG</span>
+                    <span>Menu MBG & Sunting</span>
                 </a>
                 <a href="{{ route('ai.index') }}" class="nav-item {{ request()->routeIs('ai.index') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                    <span>Resep AI</span>
+                    <span>Rekomendasi AI</span>
                 </a>
                 <a href="{{ route('insight') }}" class="nav-item {{ request()->routeIs('insight') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>

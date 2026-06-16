@@ -28,10 +28,10 @@ class DashboardController extends Controller
         ];
 
         $clusterLabels = [
-            0 => 'Seimbang',
-            1 => 'Tinggi Karbohidrat',
-            2 => 'Rendah Nutrisi',
-            3 => 'Tinggi Energi & Protein',
+            0 => 'Protein Sedang',
+            1 => 'Tinggi Energi Lengkap',
+            2 => 'Tinggi Karbohidrat',
+            3 => 'Seimbang',
         ];
 
         for ($i = 0; $i < 4; $i++) {

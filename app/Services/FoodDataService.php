@@ -26,10 +26,10 @@ class FoodDataService
                         $cluster = (int) ($item['cluster'] ?? 0);
 
                         $kategoriMap = [
-                            0 => 'Seimbang',
-                            1 => 'Tinggi Karbohidrat',
-                            2 => 'Rendah Nutrisi',
-                            3 => 'Tinggi Energi & Protein',
+                            0 => 'Protein Sedang',
+                            1 => 'Tinggi Energi Lengkap',
+                            2 => 'Tinggi Karbohidrat',
+                            3 => 'Seimbang',
                         ];
 
                         $nama = strtolower(trim($item['Menu'] ?? '-'));
@@ -95,37 +95,47 @@ class FoodDataService
                             $isBahan = true;
                         }
 
-                        return [
+                       return [
 
-                            'nama' => $item['Menu'] ?? '-',
+                                'nama' => $item['Menu'] ?? '-',
 
-                            'kalori' =>
-                                ($item['Energy (kJ)'] ?? 0) * 0.239,
+                                'kalori' => round(
+                                    (($item['Energy (kJ)'] ?? 0) * 0.239),
+                                    2
+                                ),
 
-                            'protein' =>
-                                $item['Protein (g)'] ?? 0,
+                                'protein' =>
+                                    $item['Protein (g)'] ?? 0,
 
-                            'lemak' =>
-                                $item['Fat (g)'] ?? 0,
+                                'lemak' =>
+                                    $item['Fat (g)'] ?? 0,
 
-                            'karbohidrat' =>
-                                $item['Carbohydrates (g)'] ?? 0,
+                                'karbohidrat' =>
+                                    $item['Carbohydrates (g)'] ?? 0,
 
-                            'serat' =>
-                                $item['Dietary Fiber (g)'] ?? 0,
+                                'serat' =>
+                                    $item['Dietary Fiber (g)'] ?? 0,
 
-                            'cluster' => $cluster,
+                                'zat_besi' =>
+                                    $item['Iron (mg)'] ?? 0,
 
-                            'cluster_display' => $cluster + 1,
+                                'kalsium' =>
+                                    $item['Calcium (mg)'] ?? 0,
 
-                            'kategori' =>
-                                $kategoriMap[$cluster]
-                                ?? 'Cluster',
+                                'vit_c' =>
+                                    $item['Vitamin C (mg)'] ?? 0,
 
-                            'kategori_data' =>
-                                $isBahan ? 'bahan' : 'makanan',
+                                'cluster' => $cluster,
 
-                        ];
+                                'cluster_display' => $cluster + 1,
+
+                                'kategori' =>
+                                    $kategoriMap[$cluster] ?? 'Cluster',
+
+                                'kategori_data' =>
+                                    $isBahan ? 'bahan' : 'makanan',
+
+                            ];
 
                     }, $response->json());
 
@@ -272,7 +282,7 @@ class FoodDataService
             'Cimory Fresh Milk Cashew',
             'jus mannga',
             'jus alpukat',
-            'susu milo/ milo choklat',
+            'milo coklat',
 
         ];
 
@@ -460,7 +470,7 @@ class FoodDataService
                     'Ayam Goreng Kalasan Paha',
                     'Telur ceplok',
                     'Telur dadar',
-                    'telur putih rebus',
+                    'telur puyuh rebus',
                 ],
 
                 'nabati' => [
@@ -530,7 +540,6 @@ class FoodDataService
             'Pisang Ambon',
             'Pisang Kepok',
             'Jeruk Manis',
-            'Jeruk Bali',
             'Apel',
             'Apel Malang',
             'Buah Naga Merah',
@@ -547,7 +556,11 @@ class FoodDataService
         // =========================
         // AMBIL DATA MAKANAN
         // =========================
-        $ambilMakanan = function ($nama) use ($foods) {
+        $foodImages = json_decode(
+            file_get_contents(storage_path('app/food_images.json')),
+            true
+        );
+        $ambilMakanan = function ($nama) use ($foods, $foodImages) {
 
             $found = $foods->first(function ($f) use ($nama) {
 
@@ -564,16 +577,21 @@ class FoodDataService
                     'karbohidrat' => 0,
                     'lemak' => 0,
                     'serat' => 0,
+                    'gambar' => asset('images/default-food.png'),
                 ];
             }
 
             // gambar makanan
-            $gambar = \DB::table('food_images')
-                ->whereRaw(
-                    'LOWER(nama_makanan) = ?',
-                    [strtolower($nama)]
-                )
-                ->value('gambar');
+            $gambar = null;
+
+            foreach ($foodImages as $namaJson => $fileGambar) {
+
+                if (strtolower(trim($namaJson)) === strtolower(trim($nama))) {
+
+                    $gambar = $fileGambar;
+                    break;
+                }
+            }
 
             $found['gambar'] = $gambar
                 ? asset('images/Makanan/' . $gambar)
